@@ -1,0 +1,16 @@
+{
+  "reset_day": 29,
+  "global": 190.0,
+  "consumers": {
+    "trading": 45.0,
+    "portal-ingest": 20.0,
+    "portal-chat": 25.0,
+    "house-advice": 5.0,
+    "job-classify": 12.0,
+    "cmdb": 15.0,
+    "rc-nuggets": 10.0,
+    "finance": 8.0,
+    "hermes-fallback": 10.0,
+    "reserve": 35.0
+  }
+}

@@ -1,0 +1,12 @@
+ledger.db
+*.db
+*.db-wal
+*.db-shm
+caps.local.json
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
