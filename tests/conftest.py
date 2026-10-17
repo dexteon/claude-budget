@@ -125,6 +125,8 @@ class Clock:
 def _isolated_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
     # Never touch a real key or the real ledger / alert paths.
     monkeypatch.delenv("DEX_ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("DEX_ANTHROPIC_GATEWAY_KEY", raising=False)
+    monkeypatch.delenv("DEX_ANTHROPIC_BASE_URL", raising=False)
     monkeypatch.setenv("CLAUDE_BUDGET_DB", str(tmp_path / "env-ledger.db"))
     monkeypatch.setenv("CLAUDE_BUDGET_ALERT_PATH", str(tmp_path / "env-alert.json"))
     monkeypatch.delenv("CLAUDE_BUDGET_CAPS", raising=False)

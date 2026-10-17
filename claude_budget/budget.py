@@ -58,7 +58,7 @@ def apply_defaults(
         fb = "default" if (allow_fallbacks and model in FALLBACK_MODELS) else None
     if fb is not None:
         if not allow_fallbacks:
-            raise ValueError("fallbacks are not accepted by the Batches API")
+            raise ValueError("fallbacks are not accepted here (Batches API or LiteLLM gateway mode)")
         p["fallbacks"] = fb
         betas = list(p.get("betas") or [])
         # The scalar "default" form needs the -07-01 header; the array form
@@ -109,19 +109,23 @@ class ClaudeBudget:
 
     def client(self) -> Any:
         if self._client is None:
-            key = os.environ.get(config.ENV_API_KEY, "").strip()
+            # Gateway mode sends only the LiteLLM claude-budget key, never the
+            # Anthropic key: a gateway URL with the real key would hand it to
+            # the proxy for nothing.
+            name = config.ENV_GATEWAY_KEY if config.gateway_mode() else config.ENV_API_KEY
+            key = os.environ.get(name, "").strip()
             if not key:
-                raise BudgetUnavailable(
-                    f"{config.ENV_API_KEY} is not set; use the free chain"
-                )
+                raise BudgetUnavailable(f"{name} is not set; use the free chain")
             # api_key is explicit, so the SDK skips ANTHROPIC_API_KEY /
             # ANTHROPIC_AUTH_TOKEN entirely; base_url is pinned so a
-            # user-wide ANTHROPIC_BASE_URL (e.g. a LiteLLM proxy) is ignored.
-            self._client = anthropic.Anthropic(
-                api_key=key,
-                base_url=os.environ.get(config.ENV_BASE_URL) or config.DEFAULT_BASE_URL,
-            )
+            # user-wide ANTHROPIC_BASE_URL is ignored.
+            self._client = anthropic.Anthropic(api_key=key, base_url=config.base_url())
         return self._client
+
+    @staticmethod
+    def _tag_headers(consumer: str) -> dict[str, str]:
+        """Per-consumer attribution in the gateway's spend logs (request_tags)."""
+        return {"x-litellm-tags": f"consumer:{consumer}"} if config.gateway_mode() else {}
 
     def _cycle(self, caps: Caps) -> Cycle:
         return cycle_for(self._clock(), caps.reset_day)
@@ -158,6 +162,9 @@ class ClaudeBudget:
             use = has_media(params) or estimate > 0.5 * self._headroom(consumer, caps, cycle)
         if use:
             count_kw = {k: params[k] for k in ("messages", "system", "tools") if k in params}
+            tags = self._tag_headers(consumer)
+            if tags:
+                count_kw["extra_headers"] = tags
             try:
                 counted = client.messages.count_tokens(model=model, **count_kw).input_tokens
                 estimate = bound(int(counted) + extra_input_tokens)
@@ -199,7 +206,11 @@ class ClaudeBudget:
         caps.cap_for(consumer)  # UnknownConsumer early
         cycle = self._cycle(caps)
 
-        params, use_beta = apply_defaults(kwargs, default_effort=self.default_effort)
+        params, use_beta = apply_defaults(kwargs, default_effort=self.default_effort,
+                                          allow_fallbacks=not config.gateway_mode())
+        tags = self._tag_headers(consumer)
+        if tags:
+            params["extra_headers"] = {**dict(params.get("extra_headers") or {}), **tags}
         extra = 0
         if output_format is not None and hasattr(output_format, "model_json_schema"):
             extra = len(str(output_format.model_json_schema())) // 4
@@ -249,6 +260,11 @@ class ClaudeBudget:
         ``{"custom_id": str, "params": {...messages.create kwargs...}}``.
         The whole batch's worst case is reserved against the caps until
         ``batch_collect`` records the actual per-result cost."""
+        if config.gateway_mode():
+            raise BudgetUnavailable(
+                "batches are not routed by the LiteLLM gateway; unset "
+                f"{config.ENV_BASE_URL} to submit them direct"
+            )
         client = self.client()
         caps = self.caps
         caps.cap_for(consumer)

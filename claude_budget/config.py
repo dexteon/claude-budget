@@ -16,11 +16,27 @@ from .errors import UnknownConsumer
 # a user-wide value would move Claude Code and `claude -p` off the Max plan.
 ENV_API_KEY = "DEX_ANTHROPIC_API_KEY"
 ENV_BASE_URL = "DEX_ANTHROPIC_BASE_URL"
+# LiteLLM virtual key (alias claude-budget) that can reach only the two budgeted
+# Claude groups on the gateway-host gateway. Used instead of ENV_API_KEY whenever
+# ENV_BASE_URL points anywhere other than api.anthropic.com (gateway mode).
+ENV_GATEWAY_KEY = "DEX_ANTHROPIC_GATEWAY_KEY"
 ENV_DB = "CLAUDE_BUDGET_DB"
 ENV_CAPS = "CLAUDE_BUDGET_CAPS"
 ENV_ALERT = "CLAUDE_BUDGET_ALERT_PATH"
 
 DEFAULT_BASE_URL = "https://api.anthropic.com"
+
+
+def base_url() -> str:
+    return os.environ.get(ENV_BASE_URL, "").strip() or DEFAULT_BASE_URL
+
+
+def gateway_mode() -> bool:
+    """True when calls go through the LiteLLM gateway (DEX_ANTHROPIC_BASE_URL
+    set to something other than api.anthropic.com). In that mode the gateway
+    key is used, refusal fallbacks are not sent, and batches are refused
+    because the gateway does not route them."""
+    return base_url().rstrip("/") != DEFAULT_BASE_URL
 DEFAULT_DB = Path(r"D:\DexProjects\claude-budget\ledger.db")
 DEFAULT_ALERT_PATH = Path(r"G:\CyberDash\alerts-claude-budget.json")
 ALERT_THRESHOLD = 0.80

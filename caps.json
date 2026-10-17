@@ -12,6 +12,7 @@
     "finance": 8.0,
     "hermes-fallback": 10.0,
     "sys-health": 10.0,
-    "reserve": 25.0
+    "file-indexer": 10.0,
+    "reserve": 15.0
   }
 }

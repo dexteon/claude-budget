@@ -370,3 +370,43 @@ def test_spend_shape(make_budget, fake_client):
     assert list(s["consumers"])[:2] == ["trading", "portal-ingest"]
     one = b.spend("finance")
     assert one["calls"] == 1 and one["cap_usd"] == 8 and one["cycle"]["days_to_refill"] == 22
+
+
+# -- gateway mode (DEX_ANTHROPIC_BASE_URL points at the LiteLLM gateway) -------------
+
+GW = "http://gateway-host:10100"
+
+
+def test_gateway_mode_uses_gateway_key_only(settings, monkeypatch):
+    seen = {}
+
+    def fake_ctor(**kw):
+        seen.update(kw)
+        return SimpleNamespace()
+
+    monkeypatch.setenv("DEX_ANTHROPIC_BASE_URL", GW)
+    monkeypatch.setenv("DEX_ANTHROPIC_API_KEY", "sk-dex-direct")
+    monkeypatch.setattr(claude_budget.budget.anthropic, "Anthropic", fake_ctor)
+    with pytest.raises(BudgetUnavailable):
+        ClaudeBudget(settings=settings).client()
+    monkeypatch.setenv("DEX_ANTHROPIC_GATEWAY_KEY", "sk-gw-test")
+    ClaudeBudget(settings=settings).client()
+    assert seen == {"api_key": "sk-gw-test", "base_url": GW}
+
+
+def test_gateway_mode_tags_consumer_and_skips_fallbacks(make_budget, fake_client, monkeypatch):
+    monkeypatch.setenv("DEX_ANTHROPIC_BASE_URL", GW)
+    b = make_budget(count_tokens=True)
+    b.call("finance", model="claude-sonnet-5-5", max_tokens=10, messages=MSG)
+    (_, m1, count_kw), (label, m2, kw) = fake_client.calls
+    assert m1 == "count_tokens" and count_kw["extra_headers"] == {"x-litellm-tags": "consumer:finance"}
+    assert label == "messages" and m2 == "create"
+    assert "fallbacks" not in kw and FALLBACK_BETA not in (kw.get("betas") or [])
+    assert kw["extra_headers"] == {"x-litellm-tags": "consumer:finance"}
+
+
+def test_gateway_mode_refuses_batches(make_budget, monkeypatch):
+    monkeypatch.setenv("DEX_ANTHROPIC_BASE_URL", GW)
+    with pytest.raises(BudgetUnavailable):
+        make_budget().batch_submit("finance", [{"custom_id": "a", "params": {
+            "model": "claude-haiku-4-5", "max_tokens": 10, "messages": MSG}}])
