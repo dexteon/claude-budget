@@ -374,7 +374,7 @@ def test_spend_shape(make_budget, fake_client):
 
 # -- gateway mode (DEX_ANTHROPIC_BASE_URL points at the LiteLLM gateway) -------------
 
-GW = "http://gateway-host:10100"
+GW = "http://gateway.example:4000"
 
 
 def test_gateway_mode_uses_gateway_key_only(settings, monkeypatch):

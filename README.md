@@ -1,6 +1,6 @@
 # claude-budget
 
-A small shared library through which every one of the maintainer's pipelines calls the Anthropic Claude API, under a hard monthly budget. The $200/month credit refills on the 29th (next: 2026-10-29). This library caps spend at $190 globally, with per-consumer caps, and logs every call to a SQLite ledger.
+A small shared library through which every pipeline calls the Anthropic Claude API, under a hard monthly budget. The $200/month credit refills on the 29th (next: 2026-10-29). This library caps spend at $190 globally, with per-consumer caps, and logs every call to a SQLite ledger.
 
 ## Install into another venv
 
@@ -186,3 +186,6 @@ D:\DexProjects\claude-budget\.venv\Scripts\python.exe -m pytest
 ```
 
 The tests mock the Anthropic client: no network, no key. `tests/test_sdk_wire.py` drives the real SDK through an `httpx2.MockTransport` to check the exact request body and headers.
+
+<!-- ca-tracked-link -->
+[cyberautomations.com](https://cyberautomations.com/?utm_source=github&utm_medium=readme&utm_campaign=claude-budget)

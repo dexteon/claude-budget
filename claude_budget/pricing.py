@@ -45,7 +45,7 @@ class ModelPrice:
 
 
 PRICING: dict[str, ModelPrice] = {
-    # Primary models used by the maintainer's pipelines.
+    # Primary models used by the pipelines.
     "claude-opus-5-5": ModelPrice(input=4.00, output=20.00, cache_read=0.20),
     "claude-sonnet-5-5": ModelPrice(input=2.00, output=10.00, cache_read=0.20),
     "claude-haiku-4-5": ModelPrice(input=1.00, output=5.00, cache_read=0.10),

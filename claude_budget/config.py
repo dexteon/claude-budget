@@ -17,7 +17,7 @@ from .errors import UnknownConsumer
 ENV_API_KEY = "DEX_ANTHROPIC_API_KEY"
 ENV_BASE_URL = "DEX_ANTHROPIC_BASE_URL"
 # LiteLLM virtual key (alias claude-budget) that can reach only the two budgeted
-# Claude groups on the gateway-host gateway. Used instead of ENV_API_KEY whenever
+# Claude groups on the LiteLLM gateway. Used instead of ENV_API_KEY whenever
 # ENV_BASE_URL points anywhere other than api.anthropic.com (gateway mode).
 ENV_GATEWAY_KEY = "DEX_ANTHROPIC_GATEWAY_KEY"
 ENV_DB = "CLAUDE_BUDGET_DB"
