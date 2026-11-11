@@ -1,6 +1,6 @@
 # claude-budget
 
-A small shared library through which every pipeline calls the Anthropic Claude API, under a hard monthly budget. The $200/month credit refills on the 29th (next: 2026-10-29). This library caps spend at $190 globally, with per-consumer caps, and logs every call to a SQLite ledger.
+A small shared library through which every pipeline calls the Anthropic Claude API, under a hard monthly budget. A global cap and per-consumer caps live in `caps.json` (the example caps $190 a month against a $200 API credit that resets on a set day), every call is checked against its worst-case cost before it is sent, and every call is logged to a SQLite ledger.
 
 ## Install into another venv
 
