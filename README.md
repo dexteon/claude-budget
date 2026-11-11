@@ -5,10 +5,10 @@ A small shared library through which every pipeline calls the Anthropic Claude A
 ## Install into another venv
 
 ```powershell
-D:\path\to\other\.venv\Scripts\python.exe -m pip install -e D:\DexProjects\claude-budget
+D:\path\to\other\.venv\Scripts\python.exe -m pip install -e <path-to>\claude-budget
 ```
 
-Or from an activated venv: `pip install -e D:\DexProjects\claude-budget`. Requires Python 3.10+ and `anthropic` 1.x (pulled in automatically).
+Or from an activated venv: `pip install -e <path-to>\claude-budget`. Requires Python 3.10+ and `anthropic` 1.x (pulled in automatically).
 
 ## The key rule
 
@@ -151,7 +151,7 @@ After each recorded spend, if global spend for the cycle is at least 80% of the 
 |---|---|---|
 | `DEX_ANTHROPIC_API_KEY` | (none) | the API key; missing means `BudgetUnavailable` |
 | `DEX_ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | API base URL |
-| `CLAUDE_BUDGET_DB` | `D:\DexProjects\claude-budget\ledger.db` | ledger path |
+| `CLAUDE_BUDGET_DB` | `ledger.db` in the repo folder | ledger path |
 | `CLAUDE_BUDGET_CAPS` | `caps.local.json`, then `caps.json` next to the ledger, then built-in | caps file |
 | `CLAUDE_BUDGET_ALERT_PATH` | `G:\CyberDash\alerts-claude-budget.json` | alert file |
 
@@ -182,7 +182,7 @@ Table `ledger` in `ledger.db` (WAL mode), one row per call or per batch result: 
 ## Tests
 
 ```powershell
-D:\DexProjects\claude-budget\.venv\Scripts\python.exe -m pytest
+.venv\Scripts\python.exe -m pytest
 ```
 
 The tests mock the Anthropic client: no network, no key. `tests/test_sdk_wire.py` drives the real SDK through an `httpx2.MockTransport` to check the exact request body and headers.

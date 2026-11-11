@@ -37,7 +37,7 @@ def gateway_mode() -> bool:
     key is used, refusal fallbacks are not sent, and batches are refused
     because the gateway does not route them."""
     return base_url().rstrip("/") != DEFAULT_BASE_URL
-DEFAULT_DB = Path(r"D:\DexProjects\claude-budget\ledger.db")
+DEFAULT_DB = Path(__file__).resolve().parent.parent / "ledger.db"
 DEFAULT_ALERT_PATH = Path(r"G:\CyberDash\alerts-claude-budget.json")
 ALERT_THRESHOLD = 0.80
 
