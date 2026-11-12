@@ -61,6 +61,7 @@ DEFAULT_CAPS: dict[str, Any] = {
         "sys-health": 10.0,
         "file-indexer": 10.0,
         "reserve": 15.0,
+        "credit-sink": 45.0,
     },
 }
 
