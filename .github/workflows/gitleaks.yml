@@ -1,0 +1,69 @@
+name: gitleaks
+
+# Secret scan of the full git history on every push and pull request.
+# Runs the gitleaks binary from its docker image directly, not the gitleaks-action marketplace action.
+# Callable from other repos too: uses: <owner>/<repo>/.github/workflows/gitleaks.yml@<ref>
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        # Image pinned to a release tag, never :latest, so a new upstream release cannot change the
+        # rules or break the job without a reviewed bump here (also keeps runs reproducible).
+        run: |
+          set -u
+          mkdir -p gitleaks-out
+          BASELINE_ARGS=""
+          if [ -f .gitleaks-baseline.json ]; then
+            BASELINE_ARGS="--baseline-path /repo/.gitleaks-baseline.json"
+          fi
+          CONFIG_ARGS=""
+          if [ -f .gitleaks.toml ]; then
+            CONFIG_ARGS="--config /repo/.gitleaks.toml"
+          fi
+          set +e
+          docker run --rm \
+            -v "$PWD:/repo" \
+            -v "$PWD/gitleaks-out:/out" \
+            zricethezav/gitleaks:v8.30.1 \
+            git /repo \
+            --no-banner \
+            --redact \
+            --report-format json \
+            --report-path /out/gitleaks-report.json \
+            $CONFIG_ARGS $BASELINE_ARGS
+          rc=$?
+          set -e
+          echo "rc=$rc" >> "$GITHUB_ENV"
+          # --redact replaces secret values with REDACTED in both the log and the report.
+          exit 0
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-out/gitleaks-report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Fail on new leaks
+        run: |
+          if [ "${rc}" != "0" ]; then
+            echo "gitleaks found leaks not covered by the baseline (see the gitleaks-report artifact; values redacted)."
+            exit 1
+          fi
