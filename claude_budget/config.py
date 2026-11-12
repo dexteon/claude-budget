@@ -38,9 +38,13 @@ def gateway_mode() -> bool:
     because the gateway does not route them."""
     return base_url().rstrip("/") != DEFAULT_BASE_URL
 DEFAULT_DB = Path(__file__).resolve().parent.parent / "ledger.db"
-DEFAULT_ALERT_PATH = Path(r"G:\CyberDash\alerts-claude-budget.json")
+# Platform-neutral default under the user's home. Deployments that publish the
+# alert somewhere else (a dashboard folder, say) set CLAUDE_BUDGET_ALERT_PATH.
+DEFAULT_ALERT_PATH = Path.home() / ".claude-budget" / "alerts-claude-budget.json"
 ALERT_THRESHOLD = 0.80
 
+# Kept identical to caps.json (tests/test_config_defaults.py checks it), so an
+# install without caps.json next to the ledger runs on the same allocation.
 DEFAULT_CAPS: dict[str, Any] = {
     "reset_day": 29,
     "global": 190.0,
@@ -54,7 +58,9 @@ DEFAULT_CAPS: dict[str, Any] = {
         "rc-nuggets": 10.0,
         "finance": 8.0,
         "hermes-fallback": 10.0,
-        "reserve": 35.0,
+        "sys-health": 10.0,
+        "file-indexer": 10.0,
+        "reserve": 15.0,
     },
 }
 

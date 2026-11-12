@@ -47,6 +47,6 @@ def maybe_write_alert(path: Path, *, spent: float, cap: float, cycle: Cycle, now
             json.dump(payload, f, indent=2)
         os.replace(tmp, path)
         return True
-    except OSError as exc:  # missing G: drive, permissions: never break a call over this
+    except OSError as exc:  # missing drive, permissions: never break a call over this
         log.warning("claude_budget: could not write alert %s: %s", path, exc)
         return False

@@ -135,7 +135,7 @@ Always check `msg.stop_reason == "refusal"` before reading content: a refusal ca
 
 ### 80% alert
 
-After each recorded spend, if global spend for the cycle is at least 80% of the global cap, the library writes `G:\CyberDash\alerts-claude-budget.json` (override with `CLAUDE_BUDGET_ALERT_PATH`). The file is replaced atomically and looks like this:
+After each recorded spend, if global spend for the cycle is at least 80% of the global cap, the library writes `~/.claude-budget/alerts-claude-budget.json` (override with `CLAUDE_BUDGET_ALERT_PATH`). The file is replaced atomically and looks like this:
 
 ```json
 {"source": "claude-budget", "level": "warning", "message": "...", "spent_usd": 152.1, "cap_usd": 190.0,
@@ -153,14 +153,15 @@ After each recorded spend, if global spend for the cycle is at least 80% of the 
 | `DEX_ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | API base URL |
 | `CLAUDE_BUDGET_DB` | `ledger.db` in the repo folder | ledger path |
 | `CLAUDE_BUDGET_CAPS` | `caps.local.json`, then `caps.json` next to the ledger, then built-in | caps file |
-| `CLAUDE_BUDGET_ALERT_PATH` | `G:\CyberDash\alerts-claude-budget.json` | alert file |
+| `CLAUDE_BUDGET_ALERT_PATH` | `~/.claude-budget/alerts-claude-budget.json` | alert file |
 
-`caps.json` (tracked) holds the plan allocation. Put machine-specific changes in `caps.local.json` (git-ignored). Caps are re-read on every call, so an edit applies without a restart.
+`caps.json` (tracked) holds the plan allocation, and the built-in defaults match it. Put machine-specific changes in `caps.local.json` (git-ignored). Caps are re-read on every call, so an edit applies without a restart.
 
 ```json
 {"reset_day": 29, "global": 190.0,
  "consumers": {"trading": 45, "portal-ingest": 20, "portal-chat": 25, "house-advice": 5, "job-classify": 12,
-               "cmdb": 15, "rc-nuggets": 10, "finance": 8, "hermes-fallback": 10, "reserve": 35}}
+               "cmdb": 15, "rc-nuggets": 10, "finance": 8, "hermes-fallback": 10,
+               "sys-health": 10, "file-indexer": 10, "reserve": 15}}
 ```
 
 **Cycle:** from `reset_day` 00:00 UTC to the next `reset_day`, so the 29th through the 28th. In a month shorter than `reset_day`, the boundary falls on that month's last day: in a non-leap February the cycle resets on Feb 28.
